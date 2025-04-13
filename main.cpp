@@ -139,7 +139,7 @@ void UpdateWheel() {
             isSpinning = false;
             spinSpeed  = 0.0f;
         } else {
-            spinSpeed = std::max(0.0f, spinSpeed - 0.0005f);  // Slower linear decay for a more gradual slowdown
+            spinSpeed = std::max(0.0f, spinSpeed - 0.0002f);  // Adjusted linear decay rate for slower slowdown
             currentAngle += spinSpeed;
         }
     }
@@ -197,7 +197,7 @@ int main() {
         if (ImGui::Button("Spin the Wheel")) {
             if (!isSpinning) {
                 isSpinning    = true;
-                spinSpeed     = 0.3f;  // Reduced initial speed
+                spinSpeed     = 0.2f;  // Reduced initial speed
                 spinStartTime = std::chrono::steady_clock::now();
             }
         }
