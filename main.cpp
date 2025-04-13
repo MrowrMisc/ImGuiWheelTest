@@ -16,6 +16,9 @@
 #include "imgui_impl_opengl3.h"
 #include "imgui_internal.h"
 
+// Define a constant for the font size
+const float FONT_SIZE = 24.0f;
+
 void glfw_error_callback(int error, const char* description) { std::cerr << "Glfw Error " << error << ": " << description << std::endl; }
 
 struct WheelSlice {
@@ -103,6 +106,15 @@ void DrawWheel(ImDrawList* drawList, ImVec2 center, float radius) {
         drawList->PathFillConvex(wheelSlices[i].color);
     }
 
+    // Ensure the font is loaded and the atlas is rebuilt
+    ImFont* largeFont = static_cast<ImFont*>(ImGui::GetIO().UserData);
+    if (!largeFont) {
+        std::cerr << "Failed to load font. Ensure the font file exists in the 'bree-serif' directory." << std::endl;
+        return;
+    }
+
+    ImGui::PushFont(largeFont);
+
     // Draw text over the pie slices, aligned to the angle of the slice
     for (int i = 0; i < numSlices; ++i) {
         float startAngle = currentAngle + i * anglePerSlice;
@@ -122,6 +134,10 @@ void DrawWheel(ImDrawList* drawList, ImVec2 center, float radius) {
         ImVec2 pivot_in  = textPos;
         ImVec2 pivot_out = textPos;
         ImGui::ShadeVertsTransformPos(drawList, vtx_idx_begin, vtx_idx_end, pivot_in, cos_a, sin_a, pivot_out);
+    }
+
+    if (largeFont) {
+        ImGui::PopFont();
     }
 
     // Add a circular outline for the wheel
@@ -181,6 +197,17 @@ int main() {
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
+
+    // Load the font during initialization
+    ImFont* largeFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("../../../../bree-serif/BreeSerif-Regular.ttf", FONT_SIZE);
+    if (!largeFont) {
+        std::cerr << "Failed to load font. Ensure the font file exists in the '../../../../bree-serif' directory." << std::endl;
+        return -1;
+    }
+    ImGui::GetIO().Fonts->Build();  // Rebuild the font atlas after adding the font
+
+    // Store the font globally for use during rendering
+    ImGui::GetIO().UserData = largeFont;
 
     // Main loop
     while (!glfwWindowShouldClose(window)) {
