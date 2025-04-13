@@ -45,18 +45,25 @@ void DrawWheel(ImDrawList* drawList, ImVec2 center, float radius) {
     // Initialize anglePerSlice properly
     const float anglePerSlice = 2.0f * IM_PI / numSlices;
 
+    // Clip the pie slices to the circular boundary
+    ImVec4 clipRect = ImVec4(center.x - radius, center.y - radius, center.x + radius, center.y + radius);
+    drawList->PushClipRect(ImVec2(clipRect.x, clipRect.y), ImVec2(clipRect.z, clipRect.w), true);
+
+    // Draw proper pie slices to fill the circle
     for (int i = 0; i < numSlices; ++i) {
         float startAngle = currentAngle + i * anglePerSlice;
         float endAngle   = startAngle + anglePerSlice;
 
-        drawList->AddTriangleFilled(
-            center, ImVec2(center.x + radius * cosf(startAngle), center.y + radius * sinf(startAngle)),
-            ImVec2(center.x + radius * cosf(endAngle), center.y + radius * sinf(endAngle)), wheelSlices[i].color
-        );
-
-        ImVec2 textPos = ImVec2(center.x + (radius * 0.6f) * cosf(startAngle + anglePerSlice / 2), center.y + (radius * 0.6f) * sinf(startAngle + anglePerSlice / 2));
-        drawList->AddText(textPos, IM_COL32(255, 255, 255, 255), wheelSlices[i].label.c_str());
+        // Draw a filled arc for each slice
+        drawList->PathArcTo(center, radius, startAngle, endAngle, 50);
+        drawList->PathLineTo(center);
+        drawList->PathFillConvex(wheelSlices[i].color);
     }
+
+    // Add a circular outline for the wheel
+    drawList->AddCircle(center, radius, IM_COL32(255, 255, 255, 255), 100, 2.0f);
+
+    drawList->PopClipRect();
 }
 
 void UpdateWheel() {
